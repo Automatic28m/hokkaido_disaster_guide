@@ -28,23 +28,35 @@ from typing import Optional, List, Dict
 class ChatRequest(BaseModel):
     message: Optional[str] = None
     messages: Optional[List[Dict[str, str]]] = None
+    enabled_agents: Optional[Dict[str, bool]] = {"weather": True, "disaster": True, "train": True}
 
 @app.get("/")
 def read_root():
-    return {"status": "Hokkaido RAG Backend is running and intelligent!"}
+    return {"status": "RAG Backend is running"}
 
 @app.post("/ask")
 def ask_ai(req: ChatRequest):
     if pipeline is None:
          return {"reply": "Backend Error: The RAG Pipeline is not initialized. Please run `python build_index.py` first."}
          
-    if req.messages and len(req.messages) > 0:
-        latest_message = req.messages[-1].get("content", "")
-        answer = pipeline.ask(latest_message, chat_history=req.messages)
-    else:
-        answer = pipeline.ask(req.message)
-    
-    return {"reply": answer}
+    try:
+        # DL05 Contextual Handling: Next.js sends the full 'messages' array
+        if req.messages and len(req.messages) > 0:
+            latest_message = req.messages[-1].get("content", "")
+            answer = pipeline.ask(latest_message, chat_history=req.messages, enabled_agents=req.enabled_agents)
+            return {"reply": answer}
+            
+        # Legacy fallback
+        elif req.message:
+            answer = pipeline.ask(req.message, enabled_agents=req.enabled_agents)
+            return {"reply": answer}
+            
+        else:
+            raise HTTPException(status_code=400, detail="Empty query provided.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"reply": f"Backend Error: {e}"}
 
 @app.post("/reset_memory")
 def reset_memory():

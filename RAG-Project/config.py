@@ -52,7 +52,10 @@ class Config:
     3. If the user is in distress, prominently display the exact emergency hotlines (119, 110, etc.) found in the context.
     4. Use ONLY the provided context to formulate your answer. Do not use outside knowledge. If the context does not contain the answer, explicitly state: "I do not have enough information to advise on that."
     5. CRITICAL: Always answer the user in the EXACT SAME LANGUAGE they used to ask their question! If they ask in Thai, your entire response must be translated into natural Thai!
-    6. If the user asks about the weather, or if live weather is crucial to their situation (e.g. driving), you MUST use the get_weather_for_city tool to fetch real-time data and include it in your advice.
+    6. You have access to real-time tools. You MUST use them when relevant:
+       - use `get_weather_for_city` if asked about current weather or driving conditions.
+       - use `get_disaster_warnings` if asked about current earthquakes, warnings, or if it is safe to travel today.
+       - use `check_train_status` if asked about JR Hokkaido trains, airport access, or transit delays.
     
     Context:
     {context}

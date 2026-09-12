@@ -22,7 +22,10 @@ class RAGPipeline:
         self.transformer = QueryTransformer()
         print("RAG Pipeline is online and ready!")
 
-    def ask(self, query: str, chat_history=None):
+    def ask(self, query: str, chat_history=None, enabled_agents=None):
+        if enabled_agents is None:
+            enabled_agents = {"weather": True, "disaster": True, "train": True}
+            
         # DL05 Contextual Memory
         if config.USE_MEMORY:
             chat_history = global_memory.get_history()
@@ -55,7 +58,7 @@ class RAGPipeline:
             full_history = chat_history if chat_history else [{"role": "user", "content": query}]
             
         # Step 3: Send the Top 3 chunks + Original Foreign Question + History to Groq
-        answer = self.generator.generate(query, final_chunks, full_history)
+        answer = self.generator.generate(query, final_chunks, full_history, enabled_agents)
         
         # Save to backend memory
         if config.USE_MEMORY:
